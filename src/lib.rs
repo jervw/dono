@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Error, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
 
@@ -12,10 +12,16 @@ struct Query;
 
 type Date = String;
 
+struct Contribution {
+    date: String,
+    color: String,
+}
+
 const ENDPOINT: &str = "https://api.github.com/graphql";
 
-pub fn post_query(user_name: String) -> Result<(), anyhow::Error> {
-    let github_token = "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";
+pub fn post_query(user_name: String) -> Result<query::ResponseData, Error> {
+    dotenv::dotenv().ok();
+    let github_token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN must be set");
 
     let vars = query::Variables { user_name };
 
@@ -33,9 +39,21 @@ pub fn post_query(user_name: String) -> Result<(), anyhow::Error> {
 
     let response_body = post_graphql::<Query, _>(&client, ENDPOINT, vars)?;
 
-    let response_data: query::ResponseData = response_body.data.expect("missing response data");
+    response_body
+        .data
+        .ok_or_else(|| anyhow!("no data in response"))
+}
 
-    println!("{:#?}", response_data.user);
 
-    Ok(())
+pub fn parse_contributions(response: query::ResponseData) -> Vec<Contribution> {
+    let mut contributions = Vec::new();
+    for week in response.user.contributions_collection.contribution_calendar.weeks {
+        for day in week.contribution_days {
+            contributions.push(Contribution {
+                date: day.date.to_string(),
+                color: day.color.to_string(),
+            });
+        }
+    }
+    contributions
 }
