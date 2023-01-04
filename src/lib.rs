@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use anyhow::{anyhow, Error, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
@@ -12,14 +13,15 @@ struct Query;
 
 type Date = String;
 
-struct Contribution {
-    date: String,
-    color: String,
+pub struct Contribution {
+    pub date: String,
+    pub count: i64,
+    pub color: String,
 }
 
 const ENDPOINT: &str = "https://api.github.com/graphql";
 
-pub fn post_query(user_name: String) -> Result<query::ResponseData, Error> {
+pub fn post_query(user_name: String) -> Result<query::QueryUser, Error> {
     dotenv::dotenv().ok();
     let github_token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN must be set");
 
@@ -39,21 +41,25 @@ pub fn post_query(user_name: String) -> Result<query::ResponseData, Error> {
 
     let response_body = post_graphql::<Query, _>(&client, ENDPOINT, vars)?;
 
-    response_body
-        .data
-        .ok_or_else(|| anyhow!("no data in response"))
+    let user_data = match response_body.data {
+        Some(data) => data.user.ok_or(anyhow!("user not found"))?,
+        None => return Err(anyhow!("unable to retrieve data")),
+    };
+
+    Ok(user_data)
 }
 
-
-pub fn parse_contributions(response: query::ResponseData) -> Vec<Contribution> {
-    let mut contributions = Vec::new();
-    for week in response.user.contributions_collection.contribution_calendar.weeks {
-        for day in week.contribution_days {
-            contributions.push(Contribution {
-                date: day.date.to_string(),
-                color: day.color.to_string(),
-            });
-        }
-    }
-    contributions
+pub fn parse_contributions(response: query::QueryUser) -> Vec<Contribution> {
+    response
+        .contributions_collection
+        .contribution_calendar
+        .weeks
+        .into_iter()
+        .flat_map(|week| week.contribution_days)
+        .map(|day| Contribution {
+            date: day.date,
+            count: day.contribution_count,
+            color: day.color,
+        })
+        .collect()
 }
