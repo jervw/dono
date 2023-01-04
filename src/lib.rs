@@ -5,8 +5,8 @@ use reqwest::blocking::Client;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/schema.gql",
-    query_path = "src/query.gql",
+    schema_path = "src/graphql/schema.gql",
+    query_path = "src/graphql/query.gql",
     response_derives = "Debug"
 )]
 struct Query;
