@@ -29,6 +29,6 @@ fn main() {
 
             print_contributions(contributions);
         }
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Error: {e}"),
     }
 }

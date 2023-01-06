@@ -21,11 +21,12 @@ pub struct Contribution {
     pub color: String,
 }
 
+const GITHUB_TOKEN: &str = "GITHUB_TOKEN";
 const ENDPOINT: &str = "https://api.github.com/graphql";
 
 pub fn post_query(user_name: String) -> Result<query::QueryUser, Error> {
     dotenv::dotenv().ok();
-    let github_token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN must be set");
+    let github_token = std::env::var(GITHUB_TOKEN).expect("GITHUB_TOKEN must be set");
 
     let vars = query::Variables { user_name };
 
@@ -34,7 +35,7 @@ pub fn post_query(user_name: String) -> Result<query::QueryUser, Error> {
         .default_headers(
             std::iter::once((
                 reqwest::header::AUTHORIZATION,
-                reqwest::header::HeaderValue::from_str(&format!("Bearer {}", github_token))
+                reqwest::header::HeaderValue::from_str(&format!("Bearer {github_token}"))
                     .unwrap(),
             ))
             .collect(),
@@ -66,7 +67,7 @@ pub fn parse_contributions(response: query::QueryUser) -> Vec<Contribution> {
         .collect()
 }
 
-pub fn get_total_contributions(contributions: &Vec<Contribution>) -> i64 {
+pub fn get_total_contributions(contributions: &[Contribution]) -> i64 {
     contributions.iter().map(|c| c.count).sum()
 }
 
@@ -92,7 +93,7 @@ pub fn print_contributions(contributions: Vec<Contribution>) {
 
     println!(" {} {}", " ".repeat(5), months.join("\t"));
     for (i, week) in weeks.iter().enumerate() {
-        print!("{} ", week);
+        print!("{week} ");
         for j in 0..contributions.len() {
             if j % 7 == i {
                 let color = RGB(rgb_colors[j].0, rgb_colors[j].1, rgb_colors[j].2);
