@@ -12,3 +12,4 @@ serde = "^1.0"
 clap = { version = "^4.0", features = ["derive"] }
 graphql_client = { version = "0.11.0", features = ["reqwest-blocking"] }
 dotenv = "0.15.0"
+ansi_term = "0.12.1"
