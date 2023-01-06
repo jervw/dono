@@ -1,6 +1,10 @@
+use ansi_term::Style;
 use clap::Parser;
 use dono::*;
-use ansi_term::Style;
+use std::process;
+
+mod config;
+use config::Config;
 
 #[derive(Parser)]
 #[clap(
@@ -16,6 +20,15 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+
+    let config = match Config::new() {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("{}", err);
+            process::exit(1);
+        }
+    };
+    println!("config: {:?}", config);
 
     match post_query(args.user_name) {
         Ok(response) => {
