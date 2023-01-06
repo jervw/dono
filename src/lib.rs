@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use ansi_term::Colour::RGB;
+use ansi_term::{Color::Black, Color::RGB};
 use anyhow::{anyhow, Error, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::blocking::Client;
@@ -71,7 +71,13 @@ pub fn get_total_contributions(contributions: &Vec<Contribution>) -> i64 {
 }
 
 pub fn print_contributions(contributions: Vec<Contribution>) {
-    // transfer hex color to rgb
+    let months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+
+    let weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    // convert hex color to rgb
     let rgb_colors: Vec<(u8, u8, u8)> = {
         let mut colors = Vec::new();
         for contribution in &contributions {
@@ -84,19 +90,16 @@ pub fn print_contributions(contributions: Vec<Contribution>) {
         colors
     };
 
-    let months = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ];
-
-    let weeks = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-    println!("{} {}", " ".repeat(4), months.join("\t"));
+    println!(" {} {}", " ".repeat(5), months.join("\t"));
     for (i, week) in weeks.iter().enumerate() {
         print!("{} ", week);
         for j in 0..contributions.len() {
             if j % 7 == i {
                 let color = RGB(rgb_colors[j].0, rgb_colors[j].1, rgb_colors[j].2);
-                print!("{} ", color.paint("■"));
+                match contributions[j].count {
+                    0 => print!("{} ", Black.paint("■")),
+                    _ => print!("{} ", color.paint("■")),
+                }
             }
         }
         println!();

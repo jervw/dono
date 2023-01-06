@@ -1,5 +1,6 @@
 use clap::Parser;
 use dono::*;
+use ansi_term::Style;
 
 #[derive(Parser)]
 #[clap(
@@ -19,9 +20,13 @@ fn main() {
     match post_query(args.user_name) {
         Ok(response) => {
             let contributions = parse_contributions(response);
+            // total contributions in bold style
             println!(
-                "Total contributions: {}", get_total_contributions(&contributions)
+                "\n{} {}\n",
+                Style::new().bold().paint("Total contributions:"),
+                get_total_contributions(&contributions)
             );
+
             print_contributions(contributions);
         }
         Err(e) => println!("Error: {}", e),
