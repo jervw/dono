@@ -19,9 +19,10 @@ fn main() {
     match post_query(args.user_name) {
         Ok(response) => {
             let contributions = parse_contributions(response);
-            for contribution in contributions {
-                println!("{} {}", contribution.date, contribution.color);
-            }
+            println!(
+                "Total contributions: {}", get_total_contributions(&contributions)
+            );
+            print_contributions(contributions);
         }
         Err(e) => println!("Error: {}", e),
     }
