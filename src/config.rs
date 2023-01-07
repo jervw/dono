@@ -20,8 +20,6 @@ impl Config {
         }
         let config_file = config_dir.join(CFG_FILE_NAME);
 
-        println!("config: {:?}", config_dir);
-
         // read file to string from XDG_CONFIG_HOME/dono.toml
         let config_content = match fs::read_to_string(&config_file) {
             Ok(content) => content,
@@ -33,7 +31,9 @@ impl Config {
                 };
                 let config_str = toml::to_string(&config).unwrap();
                 fs::write(&config_file, config_str)?;
-                return Err(anyhow!("config file invalid, please set your github token"));
+                return Err(anyhow!(
+                    "generated config file, please add your GitHub user token"
+                ));
             }
         };
 
@@ -48,5 +48,13 @@ impl Config {
         };
 
         Ok(config)
+    }
+
+    pub fn validate(&self) -> Result<(), Error> {
+        if self.github_user_token.is_empty() {
+            return Err(anyhow!("github user token is empty"));
+        }
+
+        Ok(())
     }
 }

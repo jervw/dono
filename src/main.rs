@@ -1,10 +1,8 @@
-use ansi_term::Style;
 use clap::Parser;
 use dono::*;
 use std::process;
 
-mod config;
-use config::Config;
+use crate::config::Config;
 
 #[derive(Parser)]
 #[clap(
@@ -28,20 +26,13 @@ fn main() {
             process::exit(1);
         }
     };
+
     println!("config: {:?}", config);
 
-    match post_query(args.user_name) {
-        Ok(response) => {
-            let contributions = parse_contributions(response);
-            // total contributions in bold style
-            println!(
-                "\n{} {}\n",
-                Style::new().bold().paint("Total contributions:"),
-                get_total_contributions(&contributions)
-            );
+    let dono = Dono::new(config);
+    let contributions = dono.get_contributions(args.user_name);
 
-            print_contributions(contributions);
-        }
-        Err(e) => println!("Error: {e}"),
+    if contributions.len() > 0 {
+        dono.print_contributions(contributions);
     }
 }
