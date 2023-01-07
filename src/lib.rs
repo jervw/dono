@@ -32,7 +32,7 @@ pub struct Dono {
 impl Dono {
     pub fn new(config: Config) -> Self {
         if let Err(err) = config.validate() {
-            eprintln!("{}", err);
+            eprintln!("{err}");
             std::process::exit(1);
         }
 
@@ -105,7 +105,7 @@ impl Dono {
         }
     }
 
-    fn total_contributions(&self, contributions: &Vec<Contribution>) -> i64 {
+    fn total_contributions(&self, contributions: &[Contribution]) -> i64 {
         contributions.iter().map(|c| c.count).sum()
     }
 
@@ -118,6 +118,7 @@ impl Dono {
                     reqwest::header::AUTHORIZATION,
                     reqwest::header::HeaderValue::from_str(&format!("Bearer {github_token}"))
                         .unwrap(),
+                    // TODO: handle error
                 ))
                 .collect(),
             )

@@ -1,8 +1,6 @@
+use crate::config::Config;
 use clap::Parser;
 use dono::*;
-use std::process;
-
-use crate::config::Config;
 
 #[derive(Parser)]
 #[clap(
@@ -22,17 +20,18 @@ fn main() {
     let config = match Config::new() {
         Ok(config) => config,
         Err(err) => {
-            eprintln!("{}", err);
-            process::exit(1);
+            eprintln!("{err}");
+            std::process::exit(1);
         }
     };
 
-    println!("config: {:?}", config);
+    // DEBUG
+    println!("config: {config:?}");
 
     let dono = Dono::new(config);
     let contributions = dono.get_contributions(args.user_name);
 
-    if contributions.len() > 0 {
+    if contributions.is_empty() {
         dono.print_contributions(contributions);
     }
 }
