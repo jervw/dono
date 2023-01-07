@@ -2,18 +2,15 @@
 name = "dono"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 authors = ["Jere Vuola <vuolajere@gmail.com"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0"
 reqwest = { version = "^0.11.12", features = ["json", "blocking"] }
-serde = "^1.0"
-serde_derive = "^1.0"
+serde = { version = "^1.0.130", features = ["derive"] }
 clap = { version = "^4.0", features = ["derive"] }
 graphql_client = { version = "0.11.0", features = ["reqwest-blocking"] }
-dotenv = "0.15.0"
 ansi_term = "0.12.1"
 toml = "0.5.10"
 dirs = "4"

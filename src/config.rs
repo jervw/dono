@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Error, Result};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use toml;
 
