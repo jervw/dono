@@ -15,8 +15,8 @@ pub struct Settings {
     pub github_user_token: String,
     pub week_starts_sunday: bool,
     pub native_colors: bool,
-    pub fill: char,
-    pub empty: char,
+    pub fill: String,
+    pub empty: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -113,8 +113,8 @@ impl Default for Config {
                 github_user_token: String::from(""),
                 week_starts_sunday: true,
                 native_colors: false,
-                fill: '■',
-                empty: '■',
+                fill: "■".to_string(),
+                empty: "■".to_string(),
             },
             colors: Colors {
                 empty: String::from("#eeeeee"),

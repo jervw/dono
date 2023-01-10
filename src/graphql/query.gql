@@ -8,6 +8,7 @@ query Query($userName: String!) {
             contributionCount
             date
             color
+            contributionLevel
           }
         }
       }

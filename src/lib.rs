@@ -1,10 +1,13 @@
-use ansi_term::{Color::Black, Color::RGB, Style};
+use crate::query::ContributionLevel;
 use anyhow::{anyhow, Error, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
-use reqwest::blocking::Client;
+use reqwest::{blocking::Client, header};
 
 pub mod config;
 use config::Config;
+
+mod color;
+use color::*;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -21,9 +24,10 @@ pub struct Contribution {
     pub date: String,
     pub count: i64,
     pub color: String,
+    pub contribution_level: ContributionLevel,
 }
 
-const ENDPOINT: &str = "https://api.github.com/graphql";
+const GITHUB_URI: &str = "https://api.github.com/graphql";
 
 pub struct Dono {
     config: Config,
@@ -53,6 +57,7 @@ impl Dono {
                     date: day.date,
                     count: day.contribution_count,
                     color: day.color,
+                    contribution_level: day.contribution_level,
                 })
                 .collect(),
             Err(e) => {
@@ -68,19 +73,6 @@ impl Dono {
         ];
         let weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        // convert hex color to rgb, TODO implement as trait
-        let rgb_colors: Vec<(u8, u8, u8)> = {
-            let mut colors = Vec::new();
-            for contribution in &contributions {
-                let hex_str = u32::from_str_radix(&contribution.color[1..], 16).unwrap();
-                let r = ((hex_str >> 16) & 0xFF) as u8;
-                let g = ((hex_str >> 8) & 0xFF) as u8;
-                let b = (hex_str & 0xFF) as u8;
-                colors.push((r, g, b));
-            }
-            colors
-        };
-
         // print total contributions by user
         println!(
             "\n{} {}\n",
@@ -92,16 +84,49 @@ impl Dono {
         println!(" {} {}", " ".repeat(5), months.join("\t"));
         for (i, week) in weeks.iter().enumerate() {
             print!("{week} ");
-            for j in 0..contributions.len() {
+            for (j, contribution) in contributions.iter().enumerate() {
                 if j % 7 == i {
-                    let color = RGB(rgb_colors[j].0, rgb_colors[j].1, rgb_colors[j].2);
-                    match contributions[j].count {
-                        0 => print!("{} ", Black.paint("■")),
-                        _ => print!("{} ", color.paint("■")),
+                    if self.config.settings.native_colors {
+                        self.print_native(contribution)
+                    } else {
+                        self.print_ansi(contribution)
                     }
                 }
             }
             println!();
+        }
+    }
+
+    // if 'native_colors' is set to true, print the color given by GitHub API
+    fn print_native(&self, contribution: &Contribution) {
+        let empty = &self.config.settings.empty;
+        let fill = &self.config.settings.fill;
+
+        // print black if count is 0, otherwise colour would be too bright
+        match contribution.count {
+            0 => print!("{} ", Color::Black.paint(empty)),
+            _ => print!("{} ", Color::hex_to_rgb(&contribution.color).paint(fill)),
+        }
+    }
+
+    // custom colors that are set in the config file
+    fn print_ansi(&self, contribution: &Contribution) {
+        let empty = &self.config.settings.empty;
+        let fill = &self.config.settings.fill;
+
+        // determine total contributions by contribution level
+        let rgb = match &contribution.contribution_level {
+            ContributionLevel::FIRST_QUARTILE => Color::hex_to_rgb(&self.config.colors.low),
+            ContributionLevel::SECOND_QUARTILE => Color::hex_to_rgb(&self.config.colors.medium),
+            ContributionLevel::THIRD_QUARTILE => Color::hex_to_rgb(&self.config.colors.high),
+            ContributionLevel::FOURTH_QUARTILE => Color::hex_to_rgb(&self.config.colors.max),
+            _ => Color::hex_to_rgb(&self.config.colors.empty),
+        };
+
+        // which symbol to print
+        match contribution.count {
+            0 => print!("{} ", rgb.paint(empty)),
+            _ => print!("{} ", rgb.paint(fill)),
         }
     }
 
@@ -110,25 +135,23 @@ impl Dono {
     }
 
     fn post_query(&self, vars: query::Variables) -> Result<query::QueryUser, Error> {
-        let github_token = &self.config.github_user_token;
+        let github_token = &self.config.settings.github_user_token;
         let client = Client::builder()
             .user_agent("grapql-rust/0.11.0")
             .default_headers(
                 std::iter::once((
-                    reqwest::header::AUTHORIZATION,
-                    reqwest::header::HeaderValue::from_str(&format!("Bearer {github_token}"))
-                        .unwrap(),
-                    // TODO: handle error
+                    header::AUTHORIZATION,
+                    header::HeaderValue::from_str(&format!("Bearer {github_token}")).unwrap(),
                 ))
                 .collect(),
             )
             .build()?;
 
-        let response_body = post_graphql::<Query, _>(&client, ENDPOINT, vars)?;
+        let response_body = post_graphql::<Query, _>(&client, GITHUB_URI, vars)?;
 
         let user_data = match response_body.data {
-            Some(data) => data.user.ok_or(anyhow!("user not found"))?,
-            None => return Err(anyhow!("unable to retrieve data")),
+            Some(data) => data.user.ok_or(anyhow!("User not found!"))?,
+            None => return Err(anyhow!("Unable to retrieve data!")),
         };
 
         Ok(user_data)
