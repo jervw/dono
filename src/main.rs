@@ -1,5 +1,10 @@
-use crate::config::Config;
 use clap::Parser;
+
+pub mod config;
+pub mod dono;
+pub mod utils;
+
+use config::Config;
 use dono::*;
 
 #[derive(Parser)]

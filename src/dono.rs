@@ -1,13 +1,10 @@
-use crate::query::ContributionLevel;
+use crate::dono::query::ContributionLevel;
+use crate::utils::color::*;
+use crate::Config;
+
 use anyhow::{anyhow, Error, Result};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::{blocking::Client, header};
-
-pub mod config;
-use config::Config;
-
-mod color;
-use color::*;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -19,7 +16,6 @@ struct Query;
 
 type Date = String;
 
-#[derive(Debug)]
 pub struct Contribution {
     pub date: String,
     pub count: i64,

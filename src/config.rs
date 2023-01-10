@@ -1,16 +1,16 @@
-use ansi_term::Color::White;
+use ansi_term::Color;
 use anyhow::{anyhow, Error, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use toml;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Config {
     pub settings: Settings,
     pub colors: Colors,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Settings {
     pub github_user_token: String,
     pub week_starts_sunday: bool,
@@ -19,7 +19,7 @@ pub struct Settings {
     pub empty: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Colors {
     pub empty: String,
     pub low: String,
@@ -54,7 +54,7 @@ impl Config {
                 println!("Please edit the file and add your GitHub personal access token.");
                 println!(
                     "Generate a personal access token at ({}).",
-                    White.dimmed().underline().paint(url)
+                    Color::White.dimmed().underline().paint(url)
                 );
                 std::process::exit(0);
             }
