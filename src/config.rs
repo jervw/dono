@@ -108,11 +108,11 @@ impl Default for Config {
             fill: "■".to_string(),
             empty: "■".to_string(),
             colors: Colors {
-                empty: String::from("#eeeeee"),
-                low: String::from("#c6e48b"),
-                medium: String::from("#7bc96f"),
-                high: String::from("#239a3b"),
-                max: String::from("#196127"),
+                empty: String::from("#161b22"),
+                low: String::from("#0e4429"),
+                medium: String::from("#006d32"),
+                high: String::from("#26a641"),
+                max: String::from("#39d353"),
             },
         }
     }
