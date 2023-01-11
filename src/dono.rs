@@ -63,7 +63,7 @@ impl Dono {
         }
     }
 
-    pub fn print_contributions(&self, contributions: Vec<Contribution>) {
+    pub fn print_contributions(&self, contributions: &[Contribution]) {
         let months = [
             "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
         ];
@@ -71,9 +71,14 @@ impl Dono {
 
         // print total contributions by user
         println!(
-            "\n{} {}\n",
-            Style::new().bold().paint("Total contributions:"),
-            self.total_contributions(&contributions)
+            "\nTotal of {} contributions in the last year\n",
+            Style::new().bold().paint(
+                contributions
+                    .iter()
+                    .map(|c| c.count)
+                    .sum::<i64>()
+                    .to_string()
+            )
         );
 
         // print month header and loop through contributions
@@ -91,6 +96,9 @@ impl Dono {
             }
             println!();
         }
+
+        // print color legend
+        self.print_legend(contributions);
     }
 
     // if 'native_colors' is set to true, print the color given by GitHub API
@@ -126,8 +134,33 @@ impl Dono {
         }
     }
 
-    fn total_contributions(&self, contributions: &[Contribution]) -> i64 {
-        contributions.iter().map(|c| c.count).sum()
+    fn print_legend(&self, contributions: &[Contribution]) {
+        use std::collections::HashSet;
+        let mut color_set: HashSet<String> = HashSet::new();
+
+        // find all unique colors
+        if self.config.settings.native_colors {
+            for contribution in contributions {
+                color_set.insert(contribution.color.clone());
+            }
+        } else {
+            color_set.insert(self.config.colors.low.clone());
+            color_set.insert(self.config.colors.medium.clone());
+            color_set.insert(self.config.colors.high.clone());
+            color_set.insert(self.config.colors.max.clone());
+            color_set.insert(self.config.colors.empty.clone());
+        }
+
+        let whitespace = " ".repeat(contributions.len() / 7 * 2 - 15);
+        print!("{whitespace} Less ");
+
+        for color in color_set {
+            print!(
+                "{} ",
+                Color::hex_to_rgb(&color).paint(&self.config.settings.fill)
+            );
+        }
+        println!("More");
     }
 
     fn post_query(&self, vars: query::Variables) -> Result<query::QueryUser, Error> {

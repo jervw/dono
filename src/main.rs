@@ -34,6 +34,6 @@ fn main() {
     let contributions = dono.get_contributions(args.user_name);
 
     if !contributions.is_empty() {
-        dono.print_contributions(contributions);
+        dono.print_contributions(&contributions);
     }
 }
