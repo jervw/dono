@@ -6,17 +6,11 @@ use toml;
 
 #[derive(Deserialize, Serialize)]
 pub struct Config {
-    pub settings: Settings,
-    pub colors: Colors,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Settings {
     pub github_user_token: String,
-    pub week_starts_sunday: bool,
     pub native_colors: bool,
     pub fill: String,
     pub empty: String,
+    pub colors: Colors,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -75,7 +69,7 @@ impl Config {
 
     pub fn validate(&self) -> Result<(), Error> {
         // validate github user token
-        if self.settings.github_user_token.is_empty() {
+        if self.github_user_token.is_empty() {
             return Err(anyhow!(
                 "GitHub user token field in configuration file is empty."
             ));
@@ -109,13 +103,10 @@ impl Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
-            settings: Settings {
-                github_user_token: String::from(""),
-                week_starts_sunday: true,
-                native_colors: false,
-                fill: "■".to_string(),
-                empty: "■".to_string(),
-            },
+            github_user_token: String::from(""),
+            native_colors: false,
+            fill: "■".to_string(),
+            empty: "■".to_string(),
             colors: Colors {
                 empty: String::from("#eeeeee"),
                 low: String::from("#c6e48b"),

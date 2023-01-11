@@ -87,7 +87,7 @@ impl Dono {
             print!("{week} ");
             for (j, contribution) in contributions.iter().enumerate() {
                 if j % 7 == i {
-                    if self.config.settings.native_colors {
+                    if self.config.native_colors {
                         self.print_native(contribution)
                     } else {
                         self.print_ansi(contribution)
@@ -103,8 +103,8 @@ impl Dono {
 
     // if 'native_colors' is set to true, print the color given by GitHub API
     fn print_native(&self, contribution: &Contribution) {
-        let empty = &self.config.settings.empty;
-        let fill = &self.config.settings.fill;
+        let empty = &self.config.empty;
+        let fill = &self.config.fill;
 
         // print black if count is 0, otherwise colour would be too bright
         match contribution.count {
@@ -115,8 +115,8 @@ impl Dono {
 
     // custom colors that are set in the config file
     fn print_ansi(&self, contribution: &Contribution) {
-        let empty = &self.config.settings.empty;
-        let fill = &self.config.settings.fill;
+        let empty = &self.config.empty;
+        let fill = &self.config.fill;
 
         // determine total contributions by contribution level
         let rgb = match &contribution.contribution_level {
@@ -139,7 +139,7 @@ impl Dono {
         let mut color_set: HashSet<String> = HashSet::new();
 
         // find all unique colors
-        if self.config.settings.native_colors {
+        if self.config.native_colors {
             for contribution in contributions {
                 color_set.insert(contribution.color.clone());
             }
@@ -155,16 +155,13 @@ impl Dono {
         print!("{whitespace} Less ");
 
         for color in color_set {
-            print!(
-                "{} ",
-                Color::hex_to_rgb(&color).paint(&self.config.settings.fill)
-            );
+            print!("{} ", Color::hex_to_rgb(&color).paint(&self.config.fill));
         }
         println!("More");
     }
 
     fn post_query(&self, vars: query::Variables) -> Result<query::QueryUser, Error> {
-        let github_token = &self.config.settings.github_user_token;
+        let github_token = &self.config.github_user_token;
         let client = Client::builder()
             .user_agent("grapql-rust/0.11.0")
             .default_headers(
