@@ -5,6 +5,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["Jere Vuola <vuolajere@gmail.com"]
+repository = "https://github.com/jervw/dono"
 readme = "README.md"
 
 [dependencies]
