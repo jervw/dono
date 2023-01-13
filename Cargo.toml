@@ -1,5 +1,6 @@
 [package]
 name = "dono"
+description = "A CLI tool to show your GitHub contributions"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
@@ -10,7 +11,7 @@ anyhow = "1.0"
 reqwest = { version = "^0.11.12", features = ["json", "blocking"] }
 serde = { version = "^1.0.130", features = ["derive"] }
 clap = { version = "^4.0", features = ["derive"] }
-graphql_client = { version = "0.11.0", features = ["reqwest-blocking"] }
+graphql_client = { version = "0.12.0", features = ["reqwest-blocking"] }
 ansi_term = "0.12.1"
 toml = "0.5.10"
 dirs = "4"

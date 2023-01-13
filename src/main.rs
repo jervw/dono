@@ -10,12 +10,12 @@ use dono::*;
 #[derive(Parser)]
 #[clap(
     name = "dono",
-    about = "A CLI tool to show your GitHub contributions",
-    version = "0.1.0"
+    about = env!("CARGO_PKG_DESCRIPTION"),
+    version = env!("CARGO_PKG_VERSION"),
 )]
 struct Args {
     /// GitHub user name
-    #[clap(name = "USER_NAME")]
+    #[clap(name = "user_name")]
     user_name: String,
 }
 
