@@ -1,0 +1,11 @@
+github_user_token = "your_token"
+native_colors = false
+fill = "■"
+empty = "■"
+
+[colors]
+empty = "#161b22"
+low = "#0e4429"
+medium = "#006d32"
+high = "#26a641"
+max = "#39d353"
