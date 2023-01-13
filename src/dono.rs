@@ -3,6 +3,7 @@ use crate::utils::color::*;
 use crate::Config;
 
 use anyhow::{anyhow, Error, Result};
+use chrono::NaiveDate;
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::{blocking::Client, header};
 
@@ -17,7 +18,7 @@ struct Query;
 type Date = String;
 
 pub struct Contribution {
-    pub date: String,
+    pub date: NaiveDate,
     pub count: i64,
     pub color: String,
     pub contribution_level: ContributionLevel,
@@ -50,7 +51,7 @@ impl Dono {
                 .into_iter()
                 .flat_map(|week| week.contribution_days)
                 .map(|day| Contribution {
-                    date: day.date,
+                    date: NaiveDate::parse_from_str(&day.date, "%Y-%m-%d").unwrap(),
                     count: day.contribution_count,
                     color: day.color,
                     contribution_level: day.contribution_level,
@@ -68,6 +69,8 @@ impl Dono {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
         ];
         let weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        println!("{}", contributions[0].date);
 
         // print total contributions by user
         println!(
