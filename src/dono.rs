@@ -1,7 +1,8 @@
 use crate::dono::query::ContributionLevel;
-use crate::utils::color::*;
+use crate::utils::color::{self, HexToRgb};
 use crate::Config;
 
+use ansi_term::{Color, Style};
 use anyhow::{anyhow, Error, Result};
 use chrono::{format::strftime::StrftimeItems, NaiveDate};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
@@ -43,6 +44,7 @@ impl Dono {
     pub fn get_contributions(&self, user_name: String) -> Vec<Contribution> {
         let vars = query::Variables { user_name };
 
+        // map response values to contribution vector
         match self.post_query(vars) {
             Ok(response) => response
                 .contributions_collection
@@ -53,7 +55,11 @@ impl Dono {
                 .map(|day| Contribution {
                     date: NaiveDate::parse_from_str(&day.date, "%Y-%m-%d").unwrap(),
                     count: day.contribution_count,
-                    color: day.color,
+                    color: if day.contribution_count == 0 {
+                        color::NATIVE_DARK.to_string()
+                    } else {
+                        day.color
+                    },
                     contribution_level: day.contribution_level,
                 })
                 .collect(),
@@ -101,11 +107,7 @@ impl Dono {
             print!("{week} ");
             for (j, contribution) in contributions.iter().enumerate() {
                 if j % 7 == i {
-                    if self.config.native_colors {
-                        self.print_native(contribution)
-                    } else {
-                        self.print_ansi(contribution)
-                    }
+                    self.print_symbol(contribution);
                 }
             }
             println!();
@@ -115,30 +117,23 @@ impl Dono {
         self.print_legend(contributions);
     }
 
-    // if 'native_colors' is set to true, print the color given by GitHub API
-    fn print_native(&self, contribution: &Contribution) {
+    fn print_symbol(&self, contribution: &Contribution) {
         let empty = &self.config.empty;
         let fill = &self.config.fill;
 
-        // print black if count is 0, otherwise colour would be too bright
-        match contribution.count {
-            0 => print!("{} ", Color::Black.paint(empty)),
-            _ => print!("{} ", Color::hex_to_rgb(&contribution.color).paint(fill)),
-        }
-    }
+        // if 'native_colors' is set to true, print the color given by GitHub API
+        let rgb = if self.config.native_colors {
+            Color::hex_to_rgb(&contribution.color)
+        } else {
+            // custom colors that are set in the config file
+            match contribution.contribution_level {
+                ContributionLevel::FIRST_QUARTILE => Color::hex_to_rgb(&self.config.colors.low),
+                ContributionLevel::SECOND_QUARTILE => Color::hex_to_rgb(&self.config.colors.medium),
+                ContributionLevel::THIRD_QUARTILE => Color::hex_to_rgb(&self.config.colors.high),
+                ContributionLevel::FOURTH_QUARTILE => Color::hex_to_rgb(&self.config.colors.max),
 
-    // custom colors that are set in the config file
-    fn print_ansi(&self, contribution: &Contribution) {
-        let empty = &self.config.empty;
-        let fill = &self.config.fill;
-
-        // determine total contributions by contribution level
-        let rgb = match &contribution.contribution_level {
-            ContributionLevel::FIRST_QUARTILE => Color::hex_to_rgb(&self.config.colors.low),
-            ContributionLevel::SECOND_QUARTILE => Color::hex_to_rgb(&self.config.colors.medium),
-            ContributionLevel::THIRD_QUARTILE => Color::hex_to_rgb(&self.config.colors.high),
-            ContributionLevel::FOURTH_QUARTILE => Color::hex_to_rgb(&self.config.colors.max),
-            _ => Color::hex_to_rgb(&self.config.colors.empty),
+                _ => Color::hex_to_rgb(&self.config.colors.empty),
+            }
         };
 
         // which symbol to print
@@ -148,32 +143,41 @@ impl Dono {
         }
     }
 
+    // print color gradation legend depending on the contribution level
     fn print_legend(&self, contributions: &[Contribution]) {
         use std::collections::HashSet;
-        let mut color_set: HashSet<String> = HashSet::new();
+        let mut colors: Vec<String> = Vec::new();
 
-        // find all unique colors
+        // find all unique colors, excluding the empty color
         if self.config.native_colors {
-            for contribution in contributions {
-                color_set.insert(contribution.color.clone());
-            }
+            let unique: HashSet<String> = contributions
+                .iter()
+                .filter(|c| c.color != color::NATIVE_DARK)
+                .map(|c| c.color.clone())
+                .collect();
+
+            colors = unique.into_iter().collect();
+            colors.sort();
+            colors.reverse();
+            colors.insert(0, color::NATIVE_DARK.to_string());
         } else {
-            color_set.insert(self.config.colors.low.clone());
-            color_set.insert(self.config.colors.medium.clone());
-            color_set.insert(self.config.colors.high.clone());
-            color_set.insert(self.config.colors.max.clone());
-            color_set.insert(self.config.colors.empty.clone());
+            colors.push(self.config.colors.empty.clone());
+            colors.push(self.config.colors.low.clone());
+            colors.push(self.config.colors.medium.clone());
+            colors.push(self.config.colors.high.clone());
+            colors.push(self.config.colors.max.clone());
         }
 
         let whitespace = " ".repeat(contributions.len() / 7 * 2 - 15);
         print!("{whitespace} Less ");
 
-        for color in color_set {
+        for color in colors {
             print!("{} ", Color::hex_to_rgb(&color).paint(&self.config.fill));
         }
         println!("More");
     }
 
+    // post query to GitHub API
     fn post_query(&self, vars: query::Variables) -> Result<query::QueryUser, Error> {
         let github_token = &self.config.github_user_token;
         let client = Client::builder()
