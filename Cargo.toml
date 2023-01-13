@@ -5,6 +5,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["Jere Vuola <vuolajere@gmail.com"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"

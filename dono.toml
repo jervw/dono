@@ -1,5 +1,5 @@
 github_user_token = "your_token"
-native_colors = false
+native_colors = false # set to true if you want to use colors from github API
 fill = "■"
 empty = "■"
 
