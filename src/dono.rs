@@ -3,7 +3,7 @@ use crate::utils::color::*;
 use crate::Config;
 
 use anyhow::{anyhow, Error, Result};
-use chrono::NaiveDate;
+use chrono::{format::strftime::StrftimeItems, NaiveDate};
 use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
 use reqwest::{blocking::Client, header};
 
@@ -70,8 +70,6 @@ impl Dono {
         ];
         let weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        println!("{}", contributions[0].date);
-
         // print total contributions by user
         println!(
             "\nTotal of {} contributions in the last year\n",
@@ -84,8 +82,21 @@ impl Dono {
             )
         );
 
-        // print month header and loop through contributions
-        println!(" {} {}", " ".repeat(5), months.join("\t"));
+        // get current month to be displayed at the end of the header
+        let current_month = contributions.last().unwrap().date;
+
+        let fmt: StrftimeItems = StrftimeItems::new("%b");
+        let current_month_str = &current_month.format_with_items(fmt).to_string();
+
+        // print month header
+        let whitespace = " ".repeat(5);
+        println!(
+            "{} {}\t{}",
+            whitespace,
+            months.join(whitespace.as_str()),
+            current_month_str
+        );
+
         for (i, week) in weeks.iter().enumerate() {
             print!("{week} ");
             for (j, contribution) in contributions.iter().enumerate() {
