@@ -1,5 +1,5 @@
 [package]
-name = "dono"
+name = "dono-cli"
 description = "A CLI tool to show your GitHub contributions"
 version = "0.1.0"
 edition = "2021"
@@ -7,6 +7,10 @@ license = "MIT"
 authors = ["Jere Vuola <vuolajere@gmail.com"]
 repository = "https://github.com/jervw/dono"
 readme = "README.md"
+
+[[bin]]
+name = "dono"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0"

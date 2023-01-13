@@ -247,7 +247,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dono"
+name = "dono-cli"
 version = "0.1.0"
 dependencies = [
  "ansi_term",
