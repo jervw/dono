@@ -1,7 +1,7 @@
 [package]
 name = "dono-cli"
 description = "A CLI tool to show your GitHub contributions"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 authors = ["Jere Vuola <vuolajere@gmail.com"]
@@ -13,12 +13,12 @@ name = "dono"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0"
-reqwest = { version = "^0.11.12", features = ["json", "blocking"] }
-serde = { version = "^1.0.130", features = ["derive"] }
-clap = { version = "^4.0", features = ["derive"] }
-graphql_client = { version = "0.12.0", features = ["reqwest-blocking"] }
+anyhow = "1.0.72"
+reqwest = { version = "^0.11.18", features = ["json", "blocking"] }
+serde = { version = "^1.0.183", features = ["derive"] }
+clap = { version = "^4.3.21", features = ["derive"] }
+graphql_client = { version = "0.13.0", features = ["reqwest-blocking"] }
 ansi_term = "0.12.1"
-toml = "0.5.10"
-dirs = "4"
-chrono = "0.4.23"
+toml = "0.7.6"
+dirs = "5.0.1"
+chrono = "0.4.26"
