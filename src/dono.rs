@@ -95,13 +95,16 @@ impl Dono {
         let current_month_str = &current_month.format_with_items(fmt).to_string();
 
         // print month header
-        let whitespace = " ".repeat(5);
-        println!(
-            "{} {}\t{}",
-            whitespace,
-            months.join(whitespace.as_str()),
-            current_month_str
-        );
+        let whitespace = " ".repeat(6);
+        print!("    ");
+        for month in months.iter() {
+            if month == &current_month_str {
+                print!("{}{}", Style::new().bold().underline().paint(month.to_string()), whitespace);
+            } else {
+                print!("{}{}", month, whitespace);
+            }
+        }
+        println!();
 
         for (i, week) in weeks.iter().enumerate() {
             print!("{week} ");
