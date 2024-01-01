@@ -11,6 +11,7 @@ pub struct Config {
     pub fill: String,
     pub empty: String,
     pub colors: Colors,
+    pub week_start_day: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -98,6 +99,17 @@ impl Config {
 
         Ok(())
     }
+
+    pub fn rewrite_config_file(&self) -> Result<(), Error> {
+        let xdg_dir = dirs::config_dir().expect("Could not find config directory.");
+        let config_dir = xdg_dir.join(CFG_DIR_NAME);
+        let config_file = config_dir.join(CFG_FILE_NAME);
+
+        let config_str = toml::to_string(&self).unwrap();
+        fs::write(&config_file, config_str)?;
+
+        Ok(())
+    }
 }
 
 impl Default for Config {
@@ -114,6 +126,7 @@ impl Default for Config {
                 high: String::from("#26a641"),
                 max: String::from("#39d353"),
             },
+            week_start_day: String::from("Sunday"),
         }
     }
 }

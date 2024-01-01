@@ -106,10 +106,31 @@ impl Dono {
         }
         println!();
 
-        for (i, week) in weeks.iter().enumerate() {
-            print!("{week} ");
+        // sunday configured as the first day of the week
+        if self.config.week_start_day == "Sunday" {
+            for (i, week) in weeks.iter().enumerate() {
+                print!("{week} ");
+                for (j, contribution) in contributions.iter().enumerate() {
+                    if j % 7 == i {
+                        self.print_symbol(contribution);
+                    }
+                }
+                println!();
+            }
+        // monday configured as the first day of the week
+        } else {
+            for (i, week) in weeks.iter().enumerate().skip(1) {
+                print!("{week} ");
+                for (j, contribution) in contributions.iter().enumerate() {
+                    if j % 7 == i {
+                        self.print_symbol(contribution);
+                    }
+                }
+                println!();
+            }
+            print!("{} ", weeks[0]);
             for (j, contribution) in contributions.iter().enumerate() {
-                if j % 7 == i {
+                if j % 7 == 0 {
                     self.print_symbol(contribution);
                 }
             }
