@@ -95,18 +95,42 @@ impl Dono {
         let current_month_str = &current_month.format_with_items(fmt).to_string();
 
         // print month header
-        let whitespace = " ".repeat(5);
-        println!(
-            "{} {}\t{}",
-            whitespace,
-            months.join(whitespace.as_str()),
-            current_month_str
-        );
+        let whitespace = " ".repeat(6);
+        print!("    ");
+        for month in months.iter() {
+            if month == &current_month_str {
+                print!("{}{}", Style::new().bold().underline().paint(month.to_string()), whitespace);
+            } else {
+                print!("{}{}", month, whitespace);
+            }
+        }
+        println!();
 
-        for (i, week) in weeks.iter().enumerate() {
-            print!("{week} ");
+        // sunday configured as the first day of the week
+        if self.config.week_start_day == "Sunday" {
+            for (i, week) in weeks.iter().enumerate() {
+                print!("{week} ");
+                for (j, contribution) in contributions.iter().enumerate() {
+                    if j % 7 == i {
+                        self.print_symbol(contribution);
+                    }
+                }
+                println!();
+            }
+        // monday configured as the first day of the week
+        } else {
+            for (i, week) in weeks.iter().enumerate().skip(1) {
+                print!("{week} ");
+                for (j, contribution) in contributions.iter().enumerate() {
+                    if j % 7 == i {
+                        self.print_symbol(contribution);
+                    }
+                }
+                println!();
+            }
+            print!("{} ", weeks[0]);
             for (j, contribution) in contributions.iter().enumerate() {
-                if j % 7 == i {
+                if j % 7 == 0 {
                     self.print_symbol(contribution);
                 }
             }
